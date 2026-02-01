@@ -2,20 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 
-const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { GetObjectCommand } = require('@aws-sdk/client-s3');
+const { s3 } = require('../s3');
 
 const turf = require('@turf/turf');
-
-// Configuration Spaces (à adapter selon votre .env)
-
-const s3Client = new S3Client({
-  endpoint: process.env.SPACES_ENDPOINT, // ex: https://fra1.digitaloceanspaces.com
-  region: process.env.SPACES_REGION, // ex: fra1
-  credentials: {
-    accessKeyId: process.env.SPACES_KEY,
-    secretAccessKey: process.env.SPACES_SECRET
-  }
-});
 
 const BUCKET_NAME = process.env.SPACES_BUCKET; // ex: green-border-files
 
@@ -83,7 +73,7 @@ async function downloadFileFromSpaces(file_id) {
     Key: key
   });
 
-  const response = await s3Client.send(command);
+  const response = await s3.send(command);
 
   const chunks = [];
   for await (const chunk of response.Body) {
