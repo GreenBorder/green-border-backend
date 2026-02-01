@@ -1,5 +1,7 @@
 const express = require("express");
 const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const app = express();
 
@@ -12,8 +14,17 @@ const upload = multer({
 
 const PORT = process.env.PORT || 3000;
 
+const s3 = new S3Client({
+  region: process.env.SPACES_REGION,
+  endpoint: process.env.SPACES_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.SPACES_KEY,
+    secretAccessKey: process.env.SPACES_SECRET
+  }
+});
+
 /* ROUTE UPLOAD — SANS express.json */
-app.post("/upload", upload.single("file"), (req, res) => {
+app.post("/upload", upload.single("file"), async (req, res) => {
   const contentType = req.headers["content-type"] || "";
 
   if (!contentType.includes("multipart/form-data")) {
@@ -51,11 +62,24 @@ app.post("/upload", upload.single("file"), (req, res) => {
     });
   }
 
-  return res.status(200).json({
-    status: "received",
-    filename: req.file.originalname,
-    size: req.file.size
-  });
+  const fileId = uuidv4();
+
+const objectKey = `uploads/${fileId}/source.geojson`;
+
+await s3.send(
+  new PutObjectCommand({
+    Bucket: process.env.SPACES_BUCKET,
+    Key: objectKey,
+    Body: req.file.buffer,
+    ContentType: req.file.mimetype
+  })
+);
+
+return res.status(200).json({
+  status: "stored",
+  file_id: fileId,
+  expires_in_hours: 48
+});
 });
 
 /* ROUTES JSON — express.json APPLIQUÉ ICI */
