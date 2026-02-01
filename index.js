@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 
 const app = express();
 
@@ -13,6 +13,7 @@ const upload = multer({
 });
 
 const PORT = process.env.PORT || 3000;
+const FILE_TTL_HOURS = 48;
 
 const s3 = new S3Client({
   region: process.env.SPACES_REGION,
@@ -80,6 +81,51 @@ return res.status(200).json({
   file_id: fileId,
   expires_in_hours: 48
 });
+});
+
+app.get("/files/:file_id", async (req, res) => {
+  const { file_id } = req.params;
+
+  const objectKey = `uploads/${file_id}/source.geojson`;
+
+  try {
+    const head = await s3.send(
+      new HeadObjectCommand({
+        Bucket: process.env.SPACES_BUCKET,
+        Key: objectKey
+      })
+    );
+
+    const lastModified = new Date(head.LastModified);
+    const expiresAt = new Date(
+      lastModified.getTime() + FILE_TTL_HOURS * 60 * 60 * 1000
+    );
+
+    if (Date.now() > expiresAt.getTime()) {
+      return res.status(410).json({
+        file_id,
+        status: "expired"
+      });
+    }
+
+    return res.status(200).json({
+      file_id,
+      status: "available",
+      size: head.ContentLength,
+      expires_at: expiresAt.toISOString()
+    });
+  } catch (err) {
+    if (err.name === "NotFound" || err.$metadata?.httpStatusCode === 404) {
+      return res.status(404).json({
+        file_id,
+        status: "not_found"
+      });
+    }
+
+    return res.status(500).json({
+      error: "internal_error"
+    });
+  }
 });
 
 /* ROUTES JSON — express.json APPLIQUÉ ICI */
