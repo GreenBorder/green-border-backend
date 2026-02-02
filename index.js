@@ -3,6 +3,7 @@ const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 const { S3Client, PutObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 const validateRoute = require("./src/routes/validate");
+const exportRoute = require("./src/routes/export");
 
 const app = express();
 
@@ -133,6 +134,7 @@ app.get("/files/:file_id", async (req, res) => {
 app.use(express.json({ limit: "10kb" }));
 
 app.use("/validate", validateRoute);
+app.use("/export", exportRoute);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
