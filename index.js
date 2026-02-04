@@ -1,11 +1,22 @@
 const express = require("express");
 const multer = require("multer");
+const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
 const { S3Client, PutObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 const validateRoute = require("./src/routes/validate");
 const exportRoute = require("./src/routes/export");
 
 const app = express();
+app.use(
+  cors({
+    origin: [
+      "https://green-border-frontend.vercel.app",
+      "http://localhost:3000"
+    ],
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 
 const upload = multer({
   storage: multer.memoryStorage(),
