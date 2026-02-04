@@ -7,18 +7,17 @@ const validateRoute = require("./src/routes/validate");
 const exportRoute = require("./src/routes/export");
 
 const app = express();
+
 app.use(
   cors({
     origin: [
       "https://green-border-frontend.vercel.app",
       "http://localhost:3000"
     ],
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
   })
 );
-
-app.options("/*", cors());
 
 const upload = multer({
   storage: multer.memoryStorage(),
