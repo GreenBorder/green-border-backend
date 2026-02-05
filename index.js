@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
@@ -5,6 +7,8 @@ const { v4: uuidv4 } = require("uuid");
 const { S3Client, PutObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 const validateRoute = require("./src/routes/validate");
 const exportRoute = require("./src/routes/export");
+const checkoutRoute = require("./src/routes/checkout");
+const webhookRoute = require("./src/routes/webhook");
 
 const app = express();
 
@@ -142,11 +146,15 @@ app.get("/files/:file_id", async (req, res) => {
   }
 });
 
+/* STRIPE WEBHOOK — AVANT express.json */
+app.use("/webhook", webhookRoute);
+
 /* ROUTES JSON — express.json APPLIQUÉ ICI */
 app.use(express.json({ limit: "10kb" }));
 
 app.use("/validate", validateRoute);
 app.use("/export", exportRoute);
+app.use("/checkout", checkoutRoute);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

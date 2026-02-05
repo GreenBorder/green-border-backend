@@ -5,9 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "start": "node index.js",
-  "test": "jest"
-},
+    "start": "node index.js",
+    "test": "jest"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GreenBorder/green-border-backend.git"
@@ -24,8 +24,10 @@
     "@aws-sdk/client-s3": "^3.980.0",
     "@turf/turf": "^7.3.3",
     "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "multer": "^2.0.2",
+    "stripe": "^20.3.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
