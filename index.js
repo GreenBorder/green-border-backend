@@ -9,6 +9,7 @@ const validateRoute = require("./src/routes/validate");
 const exportRoute = require("./src/routes/export");
 const checkoutRoute = require("./src/routes/checkout");
 const webhookRoute = require("./src/routes/webhook");
+const paymentRoute = require("./src/routes/payment");
 
 const app = express();
 
@@ -97,7 +98,7 @@ await s3.send(
 return res.status(200).json({
   status: "stored",
   file_id: fileId,
-  expires_in_hours: 48
+  expires_in_hours: 48  
 });
 });
 
@@ -155,6 +156,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use("/validate", validateRoute);
 app.use("/export", exportRoute);
 app.use("/checkout", checkoutRoute);
+app.use("/payment", paymentRoute);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
