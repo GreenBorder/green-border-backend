@@ -4,7 +4,12 @@ const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
-const { S3Client, PutObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  PutObjectCommand,
+  HeadObjectCommand
+} = require("@aws-sdk/client-s3");
+
 const validateRoute = require("./src/routes/validate");
 const exportRoute = require("./src/routes/export");
 const checkoutRoute = require("./src/routes/checkout");
@@ -13,6 +18,9 @@ const paymentRoute = require("./src/routes/payment");
 
 const app = express();
 
+/* =========================
+   CORS — SUFFISANT À LUI SEUL
+   ========================= */
 app.use(
   cors({
     origin: [
@@ -20,18 +28,14 @@ app.use(
       "http://localhost:3000"
     ],
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization"
-    ],
-    exposedHeaders: [
-      "Content-Disposition",
-      "Content-Length"
-    ]
+    allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Content-Disposition", "Content-Length"]
   })
 );
 
+/* ❌ SUPPRIMÉ DÉFINITIVEMENT
 app.options("/*", cors());
+*/
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -52,7 +56,9 @@ const s3 = new S3Client({
   }
 });
 
-/* ROUTE UPLOAD — SANS express.json */
+/* =========================
+   UPLOAD
+   ========================= */
 app.post("/upload", upload.single("file"), async (req, res) => {
   const contentType = req.headers["content-type"] || "";
 
@@ -92,28 +98,29 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 
   const fileId = uuidv4();
+  const objectKey = `uploads/${fileId}/source.geojson`;
 
-const objectKey = `uploads/${fileId}/source.geojson`;
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: process.env.SPACES_BUCKET,
+      Key: objectKey,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype
+    })
+  );
 
-await s3.send(
-  new PutObjectCommand({
-    Bucket: process.env.SPACES_BUCKET,
-    Key: objectKey,
-    Body: req.file.buffer,
-    ContentType: req.file.mimetype
-  })
-);
-
-return res.status(200).json({
-  status: "stored",
-  file_id: fileId,
-  expires_in_hours: 48  
+  return res.status(200).json({
+    status: "stored",
+    file_id: fileId,
+    expires_in_hours: 48
+  });
 });
-});
 
+/* =========================
+   FILE CHECK
+   ========================= */
 app.get("/files/:file_id", async (req, res) => {
   const { file_id } = req.params;
-
   const objectKey = `uploads/${file_id}/source.geojson`;
 
   try {
@@ -156,10 +163,14 @@ app.get("/files/:file_id", async (req, res) => {
   }
 });
 
-/* STRIPE WEBHOOK — AVANT express.json */
+/* =========================
+   STRIPE WEBHOOK (AVANT JSON)
+   ========================= */
 app.use("/webhook", webhookRoute);
 
-/* ROUTES JSON — express.json APPLIQUÉ ICI */
+/* =========================
+   ROUTES JSON
+   ========================= */
 app.use(express.json({ limit: "10kb" }));
 
 app.use("/validate", validateRoute);
