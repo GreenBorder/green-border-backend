@@ -1,5 +1,6 @@
 const express = require("express");
 const Stripe = require("stripe");
+const { addCredits } = require("../utils/credits");
 
 const PRICE_TO_CREDITS = {
   "price_1SxQOCH27V3cOtxesaN0eL3Y": 10,
@@ -46,6 +47,8 @@ router.post(
       console.log(
         `PAIEMENT CONFIRMÉ — ${credits} CRÉDITS À ATTRIBUER (price_id=${priceId})`
       );
+
+      addCredits(session.id, credits);
     }
 
     res.json({ received: true });
