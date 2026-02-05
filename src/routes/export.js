@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { GetObjectCommand } = require('@aws-sdk/client-s3');
 const { s3 } = require('../s3');
+const { getSessionIdFromToken } = require("../utils/tokens");
+const { consumeCredit, getCredits } = require("../utils/credits");
 
 const BUCKET_NAME = process.env.SPACES_BUCKET;
 
@@ -20,6 +22,33 @@ const BUCKET_NAME = process.env.SPACES_BUCKET;
  */
 router.post('/:file_id', async (req, res) => {
   const { file_id } = req.params;
+
+    // === CONTRÔLE CRÉDITS (OBLIGATOIRE) ===
+  const auth = req.headers.authorization || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+
+  if (!token) {
+    return res.status(403).json({
+      status: "error",
+      message: "Token manquant"
+    });
+  }
+
+  const sessionId = getSessionIdFromToken(token);
+  if (!sessionId) {
+    return res.status(403).json({
+      status: "error",
+      message: "Token invalide"
+    });
+  }
+
+  const remainingCredits = getCredits(sessionId);
+  if (remainingCredits <= 0) {
+    return res.status(403).json({
+      status: "error",
+      message: "Crédits épuisés"
+    });
+  }
 
   try {
     // ÉTAPE 1 : Vérifier que le fichier existe
@@ -45,6 +74,15 @@ router.post('/:file_id', async (req, res) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Length', fileBuffer.length);
+
+        // Décrémenter UN crédit après export réussi
+    const ok = consumeCredit(sessionId);
+    if (!ok) {
+      return res.status(403).json({
+        status: "error",
+        message: "Crédits épuisés"
+      });
+    }
 
     // CRITIQUE : Envoyer le buffer BRUT, pas JSON.stringify()
     return res.send(fileBuffer);
