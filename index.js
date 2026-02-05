@@ -20,9 +20,18 @@ app.use(
       "http://localhost:3000"
     ],
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization"
+    ],
+    exposedHeaders: [
+      "Content-Disposition",
+      "Content-Length"
+    ]
   })
 );
+
+app.options("*", cors());
 
 const upload = multer({
   storage: multer.memoryStorage(),
