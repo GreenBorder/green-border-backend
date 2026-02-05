@@ -31,7 +31,7 @@ app.use(
   })
 );
 
-app.options("*", cors());
+app.options("/*", cors());
 
 const upload = multer({
   storage: multer.memoryStorage(),
