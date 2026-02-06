@@ -1,9 +1,16 @@
 const express = require("express");
 const { createToken } = require("../utils/tokens");
-const { addCredits } = require("../utils/credits");
 
 const router = express.Router();
 
+/**
+ * GET /payment/success
+ *
+ * Rôle :
+ * - Générer un token client
+ * - Le token est le sessionId Stripe (mode stateless)
+ * - AUCUNE gestion de crédits ici
+ */
 router.get("/success", (req, res) => {
   const { session_id } = req.query;
 
@@ -11,12 +18,8 @@ router.get("/success", (req, res) => {
     return res.status(400).json({ error: "session_id manquant" });
   }
 
-  // Création du token client
+  // Le token EST le sessionId (mode stateless)
   const token = createToken(session_id);
-
-  // AJOUT DES CRÉDITS (exemple : 10 crédits)
-  // ⚠️ À adapter ensuite selon le pack
-  addCredits(token, 10);
 
   res.json({ token });
 });
