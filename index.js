@@ -33,8 +33,8 @@ app.use(
   })
 );
 
-// ✅ CORS PREFLIGHT EXPLICITE POUR EXPORT
-app.options("/export/:file_id", cors());
+// ✅ CORS PREFLIGHT — VERSION ROBUSTE
+app.options(/.*/, cors());
 
 /* ❌ SUPPRIMÉ DÉFINITIVEMENT
 app.options("/*", cors());
