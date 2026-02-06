@@ -29,27 +29,33 @@ router.post(
     }
 
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
+  const session = event.data.object;
 
-      const lineItems = await stripe.checkout.sessions.listLineItems(
-        session.id
-      );
+  console.log("=== STRIPE WEBHOOK checkout.session.completed ===");
+  console.log("SESSION ID:", session.id);
 
-      const priceId = lineItems.data[0].price.id;
-      const credits = PRICE_TO_CREDITS[priceId];
+  const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+  console.log("LINE ITEMS RAW:", JSON.stringify(lineItems.data, null, 2));
 
-      if (!credits) {
-        console.error("PRICE ID INCONNU :", priceId);
-        return res.status(400).json({ error: "Price inconnu" });
-      }
+  const firstItem = lineItems.data[0];
+  const priceId = firstItem?.price?.id;
 
-      // ÉTAPE 4 — VALIDATION LOGIQUE
-      console.log(
-        `PAIEMENT CONFIRMÉ — ${credits} CRÉDITS À ATTRIBUER (price_id=${priceId})`
-      );
+  console.log("PRICE ID EXTRAIT:", priceId);
 
-      addCredits(session.id, credits);
-    }
+  const credits = PRICE_TO_CREDITS[priceId];
+  console.log("CRÉDITS RÉSOLUS:", credits);
+
+  if (!credits) {
+    console.error("❌ PRICE ID INCONNU :", priceId);
+    return res.json({ received: true }); // on ACK le webhook quand même
+  }
+
+  addCredits(session.id, credits);
+
+  console.log(
+    `✅ ${credits} crédits ajoutés pour la session ${session.id}`
+  );
+}
 
     res.json({ received: true });
   }
