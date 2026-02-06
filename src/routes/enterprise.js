@@ -36,7 +36,7 @@ router.post('/contact', async (req, res) => {
 
   try {
     await transporter.sendMail({
-      from: `"Green-Border" <${process.env.SMTP_USER}>`,
+      from: '"Green-Border" <border_green@proton.me>',
       to: 'societe.triada@gmail.com',
       replyTo: email,
       subject: '[Green-Border] Nouvelle demande Enterprise',
