@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const cors = require("cors");
 
-router.use(
+router.options(
+  "/:file_id",
   cors({
     origin: [
       "https://green-border-frontend.vercel.app",
@@ -12,6 +13,7 @@ router.use(
     exposedHeaders: ["Content-Disposition", "Content-Length"],
   })
 );
+
 
 const { GetObjectCommand } = require('@aws-sdk/client-s3');
 const { s3 } = require('../s3');
