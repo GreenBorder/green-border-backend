@@ -33,6 +33,9 @@ app.use(
   })
 );
 
+// ✅ CORS PREFLIGHT EXPLICITE POUR EXPORT
+app.options("/export/:file_id", cors());
+
 /* ❌ SUPPRIMÉ DÉFINITIVEMENT
 app.options("/*", cors());
 */
