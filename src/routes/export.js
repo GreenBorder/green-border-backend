@@ -50,15 +50,25 @@ router.post('/:file_id', async (req, res) => {
     });
   }
 
-  const sessionId = getSessionIdFromToken(token) || token;
+  const sessionId = getSessionIdFromToken(token);
 
-  const remainingCredits = getCredits(sessionId);
-  if (remainingCredits <= 0) {
-    return res.status(403).json({
-      status: "error",
-      message: "Crédits épuisés"
-    });
-  }
+if (!sessionId) {
+  console.error("[EXPORT] Token sans mapping session:", token);
+  return res.status(403).json({
+    status: "error",
+    message: "Token invalide ou expiré"
+  });
+}
+
+const remainingCredits = getCredits(sessionId);
+
+if (remainingCredits <= 0) {
+  console.error("[EXPORT] Crédits épuisés pour session:", sessionId);
+  return res.status(403).json({
+    status: "error",
+    message: "Crédits épuisés"
+  });
+}
 
   try {
     // ÉTAPE 1 : Vérifier que le fichier existe
