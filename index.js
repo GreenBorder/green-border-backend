@@ -16,6 +16,7 @@ const checkoutRoute = require("./src/routes/checkout");
 const webhookRoute = require("./src/routes/webhook");
 const paymentRoute = require("./src/routes/payment");
 const creditsRoute = require("./src/routes/credits");
+const enterpriseRoute = require("./src/routes/enterprise");
 
 const app = express();
 
@@ -186,6 +187,7 @@ app.use("/export", exportRoute);
 app.use("/checkout", checkoutRoute);
 app.use("/payment", paymentRoute);
 app.use("/credits", creditsRoute);
+app.use("/enterprise", enterpriseRoute);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
