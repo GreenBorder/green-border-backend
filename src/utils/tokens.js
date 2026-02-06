@@ -1,29 +1,18 @@
-const crypto = require("crypto");
-const fs = require("fs");
-const path = require("path");
-
-const FILE_PATH = path.join(__dirname, "../storage/tokens.json");
-
-function readTokens() {
-  if (!fs.existsSync(FILE_PATH)) return {};
-  return JSON.parse(fs.readFileSync(FILE_PATH, "utf8"));
-}
-
-function writeTokens(data) {
-  fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2));
-}
+/**
+ * V1 — MODE STATELESS
+ *
+ * Le token EST le sessionId.
+ * Aucune persistance fichier (incompatible DigitalOcean).
+ */
 
 function createToken(sessionId) {
-  const token = crypto.randomBytes(32).toString("hex");
-  const data = readTokens();
-  data[token] = sessionId;
-  writeTokens(data);
-  return token;
+  // On retourne directement le sessionId comme token
+  return sessionId;
 }
 
 function getSessionIdFromToken(token) {
-  const data = readTokens();
-  return data[token];
+  // Le token EST le sessionId
+  return token || null;
 }
 
 module.exports = {

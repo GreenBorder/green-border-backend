@@ -18,7 +18,6 @@ router.options(
 
 const { GetObjectCommand } = require('@aws-sdk/client-s3');
 const { s3 } = require('../s3');
-const { getSessionIdFromToken } = require("../utils/tokens");
 const { consumeCredit, getCredits } = require("../utils/credits");
 
 const BUCKET_NAME = process.env.SPACES_BUCKET;
@@ -50,15 +49,7 @@ router.post('/:file_id', async (req, res) => {
     });
   }
 
-  const sessionId = getSessionIdFromToken(token);
-
-if (!sessionId) {
-  console.error("[EXPORT] Token sans mapping session:", token);
-  return res.status(403).json({
-    status: "error",
-    message: "Token invalide ou expiré"
-  });
-}
+  const sessionId = token;
 
 const remainingCredits = getCredits(sessionId);
 
