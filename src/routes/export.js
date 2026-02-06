@@ -50,13 +50,7 @@ router.post('/:file_id', async (req, res) => {
     });
   }
 
-  const sessionId = getSessionIdFromToken(token);
-  if (!sessionId) {
-    return res.status(403).json({
-      status: "error",
-      message: "Token invalide"
-    });
-  }
+  const sessionId = getSessionIdFromToken(token) || token;
 
   const remainingCredits = getCredits(sessionId);
   if (remainingCredits <= 0) {
