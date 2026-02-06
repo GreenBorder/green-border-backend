@@ -9,7 +9,8 @@ router.options(
       "https://green-border-frontend.vercel.app",
       "http://localhost:3000",
     ],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
     exposedHeaders: ["Content-Disposition", "Content-Length"],
   })
 );

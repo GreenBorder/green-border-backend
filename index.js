@@ -28,7 +28,11 @@ app.use(
       "http://localhost:3000"
     ],
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+  "Content-Type",
+  "Authorization",
+  "x-api-key"
+],
     exposedHeaders: ["Content-Disposition", "Content-Length"]
   })
 );
